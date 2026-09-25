@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="system">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title> Custom Print Studio - PhotoPrint ID — Passport • ID • PDF  </title>
+  <meta name="description" content="Professional client-side passport & ID photo maker, PDF print manager, and custom document layout studio with exact physical millimeter precision.">
+  <meta name="theme-color" content="#0A1931">
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- jsPDF for vector PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- PDF.js for client-side PDF rendering & page thumbnails -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <!-- pdf-lib for lossless page extraction and multi-page PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+
+  <!-- Ambient Fluid Glow Background -->
+  <div class="ambient-glow glow-1" aria-hidden="true"></div>
+  <div class="ambient-glow glow-2" aria-hidden="true"></div>
+
+  <!-- Header Bar -->
+  <header class="header-bar">
+    <div class="header-brand-wrap">
+      <div class="brand-title">
+        <span class="brand-logo-icon">📸</span>
+        <div class="brand-text">
+          <span class="brand-name">PhotoPrint <span class="brand-accent">Studio</span></span>
+          <span class="brand-subtitle">ID • Passport • PDF & Custom Layout</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Workflow Switcher Tabs -->
+    <nav class="mode-navigation-bar" aria-label="Main Workflows">
+      <button class="mode-tab-btn active" id="btn-mode-photo" data-mode="photo">
+        <span class="mode-icon">📸</span>
+        <span class="mode-text">Photo Print</span>
+      </button>
+      <button class="mode-tab-btn" id="btn-mode-pdf" data-mode="pdf">
+        <span class="mode-icon">📑</span>
+        <span class="mode-text">PDF Print</span>
+      </button>
+      <button class="mode-tab-btn" id="btn-mode-custom" data-mode="custom">
+        <span class="mode-icon">🎨</span>
+        <span class="mode-text">Custom Print</span>
+      </button>
+    </nav>
+
+    <!-- Header Actions -->
+    <div class="header-actions">
+      <button class="btn btn-icon btn-glass" id="btn-theme-toggle" title="Toggle Light / Dark Theme" aria-label="Toggle theme">
+        <span id="theme-icon">🌓</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Step Counter for Photo Print Flow -->
+  <div class="mobile-step-indicator" id="mobile-step-indicator">
+    <span id="mobile-step-title">Step 1 of 6: Select Photo</span>
+    <span id="mobile-step-progress">1 / 6</span>
+  </div>
+
+  <!-- Creation Flow Stepper for Photo Print -->
+  <div class="stepper-bar" id="stepper-bar">
+    <div class="stepper-list">
+      <div class="step-item active" data-step="1">1. Photo</div>
+      <div class="step-item" data-step="2">2. Photo Size</div>
+      <div class="step-item" data-step="3">3. Paper</div>
+      <div class="step-item" data-step="4">4. Layout</div>
+      <div class="step-item" data-step="5">5. Preview</div>
+      <div class="step-item" data-step="6">6. Export</div>
+    </div>
+  </div>
+
+  <!-- Floating Toast Shelf -->
+  <div id="toast-shelf" class="toast-shelf" aria-live="polite"></div>
+
+  <!-- Main Workspace Container -->
+  <main class="app-container">
+
+    <!-- Toast Notification Container (Legacy fallback) -->
+    <div id="toast-container" class="sr-only" aria-live="polite"></div>
+
+    <!-- ========================================== -->
+    <!-- WORKFLOW 1: PHOTO PRINT (EXISTING PRESERVED) -->
+    <!-- ========================================== -->
+
+    <!-- VIEW 1: HOME -->
+    <section id="view-home" class="view-panel">
+      <div class="hero-action-grid">
+        <!-- Select Photo Card -->
+        <div class="hero-btn-card" id="card-select-file">
+          <div class="hero-btn-icon">📁</div>
+          <div class="hero-btn-title">Select Photo</div>
+          <div class="hero-btn-desc">Upload from device or drag &amp; drop (JPG, PNG, WebP)</div>
+          <input type="file" id="file-input-hidden" accept="image/*" class="sr-only" multiple>
+        </div>
+
+        <!-- Take Photo Camera Card -->
+        <div class="hero-btn-card" id="card-take-photo">
+          <div class="hero-btn-icon">📷</div>
+          <div class="hero-btn-title">Take Photo</div>
+          <div class="hero-btn-desc">Capture using webcam or phone camera</div>
+        </div>
+      </div>
+
+      <!-- Quick Templates Grid -->
+      <div class="card glass-card" style="margin-bottom: var(--space-6);">
+        <h2 style="font-size: var(--font-size-md); font-weight: 700; margin-bottom: var(--space-3); display: flex; align-items: center; gap: 8px;">
+          <span>🚀</span> Quick Templates
+        </h2>
+        <div class="chip-grid" id="quick-templates-grid">
+          <button class="chip selected" data-template="passport-eu-uk">Standard Passport (35×45mm)</button>
+          <button class="chip" data-template="passport-us-2x2">US Passport / Visa (2×2 in)</button>
+          <button class="chip" data-template="passport-30x40">Asian ID (30×40mm)</button>
+          <button class="chip" data-template="id-card-wallet">Wallet ID Card (54×86mm)</button>
+          <button class="chip" data-template="a4-sheet">Full A4 Photo Sheet</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: PHOTO EDITOR -->
+    <section id="view-editor" class="view-panel hidden">
+      <div class="editor-workspace">
+        <!-- Canvas & Face Guide Area -->
+        <div class="card glass-card" style="display: flex; flex-direction: column; align-items: center;">
+          <div id="face-guide-banner" class="status-badge success" style="margin-bottom: var(--space-2); width: 100%; justify-content: center;">
+            ✓ Face position guide active
+          </div>
+
+          <div class="canvas-shadow-wrap" style="position: relative; max-width: 100%; overflow: hidden; border-radius: var(--radius-md); background: #000;">
+            <canvas id="crop-canvas" style="display: block; cursor: grab; max-height: 55vh;"></canvas>
+          </div>
+
+          <!-- Quick Canvas Control Toolbar -->
+          <div style="display: flex; gap: var(--space-2); margin-top: var(--space-3); flex-wrap: wrap; justify-content: center;">
+            <button class="btn btn-secondary" id="btn-undo" title="Undo">↩️ Undo</button>
+            <button class="btn btn-secondary" id="btn-redo" title="Redo">↪️ Redo</button>
+            <button class="btn btn-secondary" id="btn-rotate-90" title="Rotate 90 degrees">🔄 90°</button>
+            <button class="btn btn-secondary" id="btn-reset-crop" title="Reset crop">Reset</button>
+          </div>
+        </div>
+
+        <!-- Controls Sidebar -->
+        <div class="card glass-card">
+          <h3 style="font-size: var(--font-size-md); font-weight: 700; margin-bottom: var(--space-3);">Adjustments</h3>
+          
+          <!-- Zoom Slider with +/- Buttons and Live Readout -->
+          <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <label class="form-label" for="slider-zoom">Zoom Level</label>
+              <span id="badge-zoom-val" class="status-badge success" style="padding: 1px 8px; font-size: 11px;">Zoom: 100%</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: var(--space-2);">
+              <button class="btn btn-secondary" id="btn-zoom-out" style="padding: 2px 10px; min-height: 36px; font-weight: bold;">−</button>
+              <input type="range" id="slider-zoom" min="0.5" max="3" step="0.05" value="1" style="flex: 1;">
+              <button class="btn btn-secondary" id="btn-zoom-in" style="padding: 2px 10px; min-height: 36px; font-weight: bold;">+</button>
+            </div>
+          </div>
+
+          <!-- Precision 4-Way Arrow Nudge Pad -->
+          <div class="form-group">
+            <label class="form-label">Position Nudge (1% steps)</label>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 4px 0;">
+              <button class="btn btn-secondary" id="btn-nudge-up" style="padding: 2px 16px; min-height: 32px;" title="Nudge Up">⬆️</button>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-secondary" id="btn-nudge-left" style="padding: 2px 16px; min-height: 32px;" title="Nudge Left">⬅️</button>
+                <button class="btn btn-secondary" id="btn-nudge-down" style="padding: 2px 16px; min-height: 32px;" title="Nudge Down">⬇️</button>
+                <button class="btn btn-secondary" id="btn-nudge-right" style="padding: 2px 16px; min-height: 32px;" title="Nudge Right">➡️</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fine Rotation Slider -->
+          <div class="form-group">
+            <label class="form-label" for="slider-fine-rotate">Fine Rotation (<span id="val-fine-rotate">0</span>°)</label>
+            <input type="range" id="slider-fine-rotate" min="-45" max="45" step="0.5" value="0">
+          </div>
+
+          <!-- Backdrop Edge Fill -->
+          <div class="form-group">
+            <label class="form-label">Backdrop Fill (Edges)</label>
+            <div class="chip-grid" id="bg-fill-chips">
+              <button class="chip selected" data-bg="original">Original</button>
+              <button class="chip" data-bg="white">White</button>
+              <button class="chip" data-bg="light-blue">Light Blue</button>
+              <input type="color" id="bg-custom-color" value="#FFFFFF" title="Custom color fill" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border-color); cursor: pointer;">
+            </div>
+          </div>
+
+          <div style="margin-top: var(--space-4);">
+            <button class="btn btn-primary" id="btn-editor-next" style="width: 100%;">Continue to Photo Size →</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3 & 4 & 5: LAYOUT & LIVE PREVIEW -->
+    <section id="view-layout" class="view-panel hidden">
+
+      <!-- 1. Multi-Person Photo Tray (Persistent Scroll Strip) -->
+      <div class="card glass-card" style="margin-bottom: var(--space-4);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+          <h3 style="font-size: var(--font-size-sm); font-weight: 700;">👥 Photo Tray (Select photo to place in grid)</h3>
+          <button class="btn btn-outline" id="btn-add-tray-photo" style="padding: 2px 10px; min-height: 32px; font-size: 12px;">+ Add Photo</button>
+          <input type="file" id="tray-file-input-hidden" accept="image/*" class="sr-only">
+        </div>
+        <div id="photo-tray-strip" style="display: flex; gap: var(--space-3); overflow-x: auto; padding: var(--space-2) 0;">
+          <!-- Photo tray items generated dynamically -->
+        </div>
+      </div>
+
+      <div class="workspace-layout">
+        
+        <!-- 2. Live Canvas Preview Frame (Photo Layout) -->
+        <div class="card glass-card" style="display: flex; flex-direction: column; align-items: center;">
+          <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; margin-bottom: var(--space-2);">
+            <span id="preview-summary-strip" style="font-size: var(--font-size-xs); font-weight: 700; color: var(--primary-700);">
+              35 × 45 mm · A4 · 30 photos
+            </span>
+            <span id="quality-check-badge" class="status-badge success">✓ Print Quality Good</span>
+          </div>
+
+          <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">
+            💡 Tap any grid cell to place selected photo. Click filled cell to duplicate/remove.
+          </p>
+
+          <div class="preview-container" style="width: 100%;">
+            <div id="paper-frame" class="paper-sheet-frame">
+              <!-- Physical Ruler Markings Overlay -->
+              <div class="ruler-overlay-x" id="ruler-x">210 mm</div>
+              <div class="ruler-overlay-y" id="ruler-y">297 mm</div>
+              <canvas id="preview-canvas" class="preview-canvas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Controls Panel (Layout Settings) -->
+        <div class="card glass-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4); flex-wrap: wrap; gap: 8px;">
+            <h2 style="font-size: var(--font-size-md); font-weight: 700;">Layout Settings</h2>
+            <div style="display: flex; gap: 6px;">
+              <button class="btn btn-primary" id="btn-optimize-layout" style="padding: 4px 10px; min-height: 34px; font-size: 12px;">
+                ✨ Auto Fill
+              </button>
+              <button class="btn btn-secondary" id="btn-clear-grid" style="padding: 4px 10px; min-height: 34px; font-size: 12px;">
+                🗑️ Clear Grid
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Selector Buttons for Photo & Paper Size -->
+          <div class="form-group">
+            <label class="form-label">Photo Size</label>
+            <button class="btn btn-secondary" id="btn-open-photo-size-modal" style="width: 100%; justify-content: space-between;">
+              <span id="label-selected-photo-size">35 × 45 mm (Standard EU/UK)</span>
+              <span>✏️</span>
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Paper Size</label>
+            <button class="btn btn-secondary" id="btn-open-paper-size-modal" style="width: 100%; justify-content: space-between;">
+              <span id="label-selected-paper-size">A4 (210 × 297 mm)</span>
+              <span>✏️</span>
+            </button>
+          </div>
+
+          <!-- Copies Selector -->
+          <div class="form-group">
+            <label class="form-label">Number of Copies</label>
+            <div class="chip-grid" id="copies-chips">
+              <button class="chip selected" data-copies="max">Maximum</button>
+              <button class="chip" data-copies="1">1</button>
+              <button class="chip" data-copies="2">2</button>
+              <button class="chip" data-copies="4">4</button>
+              <button class="chip" data-copies="6">6</button>
+              <button class="chip" data-copies="8">8</button>
+              <button class="chip" data-copies="12">12</button>
+              <button class="chip" data-copies="20">20</button>
+              <button class="chip" data-copies="30">30</button>
+            </div>
+            <div style="display: flex; gap: var(--space-2); margin-top: var(--space-2);">
+              <input type="number" id="input-custom-copies" class="form-input" placeholder="Custom copies" min="1" max="200" style="flex: 1;">
+            </div>
+            <span id="copies-info-text" style="font-size: var(--font-size-xs); color: var(--text-secondary); margin-top: 2px;">Calculating max copies...</span>
+          </div>
+
+          <!-- Advanced Collapsible Settings -->
+          <div class="collapsible-panel">
+            <div class="collapsible-header" id="toggle-advanced-settings">
+              <span>More Settings ▾</span>
+              <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">Margins, Gap, Border, Marks</span>
+            </div>
+            <div class="collapsible-body hidden" id="body-advanced-settings">
+              
+              <!-- PHASE 6: ADVANCED 4-WAY INDEPENDENT PAGE MARGIN CONTROLS -->
+              <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                  <label class="form-label" style="margin: 0;">Paper Margins (mm)</label>
+                  <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" class="btn btn-xs btn-outline" id="btn-toggle-link-margins" title="Link/Unlink margins">
+                      <span id="icon-link-margins">🔗</span> <span id="text-link-margins">Linked</span>
+                    </button>
+                    <label style="font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer; color: var(--text-secondary);">
+                      <input type="checkbox" id="chk-ignore-margins">
+                      <span>Ignore Margins</span>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- 4-Way Margin Grid -->
+                <div class="margin-quad-grid" id="photo-margin-grid">
+                  <div class="margin-input-unit">
+                    <span class="margin-input-tag">Top</span>
+                    <input type="number" id="input-margin-top" class="form-input form-input-sm" value="5" min="0" max="40" step="0.5">
+                  </div>
+                  <div class="margin-input-unit">
+                    <span class="margin-input-tag">Bottom</span>
+                    <input type="number" id="input-margin-bottom" class="form-input form-input-sm" value="5" min="0" max="40" step="0.5">
+                  </div>
+                  <div class="margin-input-unit">
+                    <span class="margin-input-tag">Left</span>
+                    <input type="number" id="input-margin-left" class="form-input form-input-sm" value="5" min="0" max="40" step="0.5">
+                  </div>
+                  <div class="margin-input-unit">
+                    <span class="margin-input-tag">Right</span>
+                    <input type="number" id="input-margin-right" class="form-input form-input-sm" value="5" min="0" max="40" step="0.5">
+                  </div>
+                </div>
+                <!-- Hidden single slider fallback for backward compatibility -->
+                <input type="hidden" id="slider-margin" value="5">
+                <span id="val-margin" class="sr-only">5</span>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="slider-gap">Photo Gap (<span id="val-gap">2</span> mm)</label>
+                <input type="range" id="slider-gap" min="0" max="15" step="0.5" value="2">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="select-border-thickness">Border Thickness</label>
+                <select id="select-border-thickness" class="form-select">
+                  <option value="0">None (0 mm)</option>
+                  <option value="0.2">0.2 mm (Thin hairline)</option>
+                  <option value="0.5" selected>0.5 mm (Standard)</option>
+                  <option value="1">1.0 mm (Thick)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Border Color</label>
+                <div class="chip-grid" id="border-color-chips">
+                  <button class="chip selected" data-color="#000000">Black</button>
+                  <button class="chip" data-color="#FFFFFF">White</button>
+                  <button class="chip" data-color="#94A3B8">Gray</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="select-cutting-marks">Cutting Marks</label>
+                <select id="select-cutting-marks" class="form-select">
+                  <option value="none">None</option>
+                  <option value="crop-marks" selected>Crop Hairline Marks</option>
+                  <option value="photo-border">Photo Border Box</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="select-orientation">Paper Orientation</label>
+                <select id="select-orientation" class="form-select">
+                  <option value="auto" selected>Auto (Best fit)</option>
+                  <option value="portrait">Portrait</option>
+                  <option value="landscape">Landscape</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="select-dpi">Export DPI</label>
+                <select id="select-dpi" class="form-select">
+                  <option value="300" selected>300 DPI (High Quality Print)</option>
+                  <option value="600">600 DPI (Ultra Fine Detail)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top: var(--space-4);">
+            <button class="btn btn-primary" id="btn-layout-next" style="width: 100%;">Proceed to Export &amp; Print →</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- VIEW 6: EXPORT & PRINT -->
+    <section id="view-export" class="view-panel hidden">
+      <div class="card glass-card" style="max-width: 600px; margin: 0 auto; text-align: center;">
+        <h2 style="font-size: var(--font-size-xl); font-weight: 700; margin-bottom: var(--space-2);">Export &amp; Print Ready</h2>
+        <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-4);">
+          Your print sheet has been calculated to exact physical dimensions.
+        </p>
+
+        <!-- Layout Specs Table -->
+        <div style="background: var(--bg-subtle); padding: var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-6); text-align: left; font-size: var(--font-size-sm);">
+          <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>Photo Size:</span><strong id="exp-val-photo-size">35 × 45 mm</strong></div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>Paper Size:</span><strong id="exp-val-paper-size">A4 (210 × 297 mm)</strong></div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>Total Photos:</span><strong id="exp-val-copies">30 copies (5 cols × 6 rows)</strong></div>
+          <div style="display: flex; justify-content: space-between; padding: 4px 0;"><span>Target DPI:</span><strong id="exp-val-dpi">300 DPI</strong></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: var(--space-3);">
+          <button class="btn btn-primary" id="btn-export-pdf" style="min-height: 48px; font-size: 16px;">
+            📄 Download Vector PDF
+          </button>
+          <button class="btn btn-secondary" id="btn-export-jpg" style="min-height: 44px;">
+            🖼️ Download High-Res JPG
+          </button>
+          <button class="btn btn-secondary" id="btn-export-png" style="min-height: 44px;">
+            🖼️ Download Transparent PNG
+          </button>
+          <button class="btn btn-outline" id="btn-print-direct" style="min-height: 44px;">
+            🖨️ Print Direct (window.print)
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- WORKFLOW 2: PHASE 2 — PDF PRINT MANAGER   -->
+    <!-- ========================================== -->
+    <section id="view-pdf-print" class="view-panel hidden">
+      <!-- PDF Upload View (When no PDF is loaded yet) -->
+      <div id="pdf-upload-panel" class="card glass-card pdf-upload-card">
+        <div class="pdf-upload-dropzone" id="pdf-dropzone">
+          <div class="pdf-dropzone-icon">📑</div>
+          <h2 style="font-size: var(--font-size-xl); font-weight: 700; margin-bottom: 6px;">Upload PDF Document</h2>
+          <p style="font-size: var(--font-size-sm); color: var(--text-secondary); max-width: 480px; margin: 0 auto var(--space-4);">
+            Upload your multi-page PDF to preview pages, select specific pages, and print only what you need with millimeter accuracy.
+          </p>
+          <button class="btn btn-primary btn-lg" id="btn-browse-pdf">
+            <span>📁</span> Choose PDF File
+          </button>
+          <input type="file" id="input-pdf-file" accept="application/pdf,.pdf" class="sr-only">
+          <div style="margin-top: var(--space-3); font-size: var(--font-size-xs); color: var(--text-muted);">
+            Supports portrait, landscape, and mixed page sizes. Client-side only — your files never leave your device.
+          </div>
+        </div>
+      </div>
+
+      <!-- PDF Loading State -->
+      <div id="pdf-loading-panel" class="card glass-card hidden" style="text-align: center; padding: var(--space-8) var(--space-4);">
+        <div class="spinner-ring"></div>
+        <h3 style="font-size: var(--font-size-lg); font-weight: 700; margin-top: var(--space-4);" id="pdf-loading-title">Parsing PDF Document...</h3>
+        <p style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-top: 4px;" id="pdf-loading-desc">Generating high-fidelity page thumbnails...</p>
+        <div class="progress-bar-container" style="max-width: 320px; margin: var(--space-4) auto 0;">
+          <div class="progress-bar-fill" id="pdf-progress-bar" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- PDF Error Alert Banner -->
+      <div id="pdf-error-banner" class="alert alert-danger hidden" style="margin-bottom: var(--space-4);">
+        <span class="alert-icon">⚠️</span>
+        <div class="alert-content">
+          <strong id="pdf-error-title">Unable to render PDF</strong>
+          <p id="pdf-error-message" style="margin: 0; font-size: 13px;">The selected file could not be parsed. Please check if the file is corrupted or password-protected.</p>
+        </div>
+        <button class="btn btn-xs btn-outline" id="btn-dismiss-pdf-error">Dismiss</button>
+      </div>
+
+      <!-- PDF Manager Workspace (Shown after PDF is loaded) -->
+      <div id="pdf-manager-panel" class="hidden">
+        
+        <!-- Sticky PDF Controls Toolbar -->
+        <div class="card glass-card pdf-sticky-toolbar">
+          <div class="pdf-toolbar-row">
+            <div class="pdf-info-group">
+              <div class="pdf-doc-title-wrap">
+                <span class="pdf-file-icon">📄</span>
+                <span class="pdf-file-name" id="pdf-doc-name">document.pdf</span>
+              </div>
+              <span class="status-badge success" id="pdf-selection-badge">Selected: 0 / 0 pages</span>
+            </div>
+
+            <div class="pdf-actions-group">
+              <button class="btn btn-secondary btn-sm" id="btn-pdf-select-all" title="Select all pages">
+                ✓ Select All
+              </button>
+              <button class="btn btn-secondary btn-sm" id="btn-pdf-deselect-all" title="Deselect all pages">
+                ✗ Deselect All
+              </button>
+              <button class="btn btn-outline btn-sm" id="btn-pdf-change-file" title="Load a different PDF">
+                📁 Change PDF
+              </button>
+            </div>
+          </div>
+
+          <!-- Page Range Input & Print Execution Row -->
+          <div class="pdf-range-row">
+            <div class="pdf-range-input-group">
+              <label for="input-pdf-range" class="sr-only">Page Range</label>
+              <input type="text" id="input-pdf-range" class="form-input form-input-sm" placeholder="Page range (e.g. 1, 3, 5-8)">
+              <button class="btn btn-secondary btn-sm" id="btn-pdf-apply-range">Apply Range</button>
+            </div>
+
+            <div class="pdf-main-print-actions">
+              <button class="btn btn-outline btn-sm" id="btn-pdf-download-subset" title="Export only selected pages to a new PDF">
+                📄 Export Selected PDF
+              </button>
+              <button class="btn btn-primary btn-sm btn-glow" id="btn-pdf-print-selected" title="Print only selected pages">
+                🖨️ Print PDF
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PDF Pages Responsive Grid -->
+        <div class="pdf-pages-grid" id="pdf-pages-grid">
+          <!-- Page thumbnail cards injected dynamically -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- WORKFLOW 3: PHASE 5 — CUSTOM PRINT STUDIO -->
+    <!-- ========================================== -->
+    <section id="view-custom-print" class="view-panel hidden">
+      
+      <!-- Custom Print Top Bar (Page Setup, Alignment, Output) -->
+      <div class="card glass-card cp-top-bar">
+        
+        <!-- Left Group: Page Size & Orientation -->
+        <div class="cp-bar-group">
+          <div class="form-item-inline">
+            <label for="cp-select-paper" class="form-label-inline">Paper:</label>
+            <select id="cp-select-paper" class="form-select form-select-sm">
+              <option value="A4" selected>A4 (210 × 297 mm)</option>
+              <option value="A5">A5 (148 × 210 mm)</option>
+              <option value="A6">A6 (105 × 148 mm)</option>
+              <option value="Letter">US Letter (8.5 × 11 in)</option>
+              <option value="Legal">US Legal (8.5 × 14 in)</option>
+              <option value="4x6">Photo 4 × 6 in (101.6 × 152.4 mm)</option>
+              <option value="5x7">Photo 5 × 7 in (127 × 177.8 mm)</option>
+              <option value="custom">Custom Dimensions...</option>
+            </select>
+          </div>
+
+          <!-- Orientation Toggle -->
+          <div class="btn-group-toggle" role="group" aria-label="Page Orientation">
+            <button class="btn btn-xs active" id="cp-btn-orient-portrait" title="Portrait orientation">Portrait</button>
+            <button class="btn btn-xs" id="cp-btn-orient-landscape" title="Landscape orientation">Landscape</button>
+          </div>
+
+          <!-- Margins & Header/Footer Modal Triggers -->
+          <button class="btn btn-outline btn-xs" id="cp-btn-open-margins" title="Adjust page margins">
+            📐 Margins (<span id="cp-badge-margin-summary">10mm</span>)
+          </button>
+          <button class="btn btn-outline btn-xs" id="cp-btn-open-header-footer" title="Configure optional header &amp; footer">
+            📝 Header &amp; Footer
+          </button>
+        </div>
+
+        <!-- Center Group: Object Content & Layout Tools -->
+        <div class="cp-bar-group">
+          <button class="btn btn-primary btn-xs" id="cp-btn-add-image">
+            + 🖼️ Add Image
+          </button>
+          <input type="file" id="cp-image-file-input" accept="image/*" class="sr-only">
+
+          <!-- Alignment Tools -->
+          <div class="cp-align-tools" title="Alignment Tools">
+            <button class="btn btn-icon-sm" id="cp-align-left" title="Align Left">⇤</button>
+            <button class="btn btn-icon-sm" id="cp-align-center" title="Align Center">⇥⇤</button>
+            <button class="btn btn-icon-sm" id="cp-align-right" title="Align Right">⇥</button>
+            <button class="btn btn-icon-sm" id="cp-align-top" title="Align Top">⤒</button>
+            <button class="btn btn-icon-sm" id="cp-align-middle" title="Align Middle">↕</button>
+            <button class="btn btn-icon-sm" id="cp-align-bottom" title="Align Bottom">⤓</button>
+          </div>
+
+          <!-- History / Grid -->
+          <button class="btn btn-icon-sm" id="cp-btn-undo" title="Undo (Ctrl+Z)">↩️</button>
+          <button class="btn btn-icon-sm" id="cp-btn-redo" title="Redo (Ctrl+Y)">↪️</button>
+          <button class="btn btn-icon-sm" id="cp-btn-toggle-grid" title="Toggle Grid &amp; Snapping">📏</button>
+        </div>
+
+        <!-- Right Group: Print & Export Actions -->
+        <div class="cp-bar-group">
+          <button class="btn btn-outline btn-xs" id="cp-btn-preview-sheet" title="Full Sheet Preview">
+            👁️ Preview
+          </button>
+          <button class="btn btn-secondary btn-xs" id="cp-btn-export-pdf" title="Export as physical mm PDF">
+            📄 Export PDF
+          </button>
+          <button class="btn btn-secondary btn-xs" id="cp-btn-export-img" title="Export 300 DPI image">
+            🖼️ Export Image
+          </button>
+          <button class="btn btn-primary btn-xs btn-glow" id="cp-btn-print" title="Direct Window Print">
+            🖨️ Print
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom Print Workspace: Canvas Viewport & Inspector Panel -->
+      <div class="cp-workspace-layout">
+
+        <!-- Canvas Viewport Frame with Rulers -->
+        <div class="cp-canvas-area" id="cp-canvas-viewport">
+          
+          <!-- Horizontal & Vertical Physical mm Rulers -->
+          <div class="cp-ruler-corner">mm</div>
+          <div class="cp-ruler-h" id="cp-ruler-x">
+            <span class="cp-ruler-val">0</span>
+            <span class="cp-ruler-val" id="cp-ruler-val-w">210 mm</span>
+          </div>
+          <div class="cp-ruler-v" id="cp-ruler-y">
+            <span class="cp-ruler-val">0</span>
+            <span class="cp-ruler-val" id="cp-ruler-val-h">297 mm</span>
+          </div>
+
+          <!-- Physical Paper Sheet Canvas Container -->
+          <div class="cp-sheet-wrapper" id="cp-sheet-wrapper">
+            <div class="cp-paper-sheet" id="cp-paper-sheet">
+              
+              <!-- Header Zone (Visible when enabled) -->
+              <div class="cp-header-zone hidden" id="cp-header-zone">
+                <span class="cp-header-left" id="cp-header-text-left">Company Name</span>
+                <span class="cp-header-center" id="cp-header-text-center">Document Title</span>
+                <span class="cp-header-right" id="cp-header-text-right">Date</span>
+              </div>
+
+              <!-- Safe Margin Boundary Overlay -->
+              <div class="cp-safe-margin-box" id="cp-safe-margin-box"></div>
+
+              <!-- Objects Interactive Layer -->
+              <div class="cp-objects-layer" id="cp-objects-layer"></div>
+
+              <!-- Footer Zone (Visible when enabled) -->
+              <div class="cp-footer-zone hidden" id="cp-footer-zone">
+                <span class="cp-footer-left" id="cp-footer-text-left"></span>
+                <span class="cp-footer-center" id="cp-footer-text-center"></span>
+                <span class="cp-footer-right" id="cp-footer-text-right">Page 1 of 1</span>
+              </div>
+
+              <!-- Grid Overlay -->
+              <div class="cp-grid-overlay hidden" id="cp-grid-overlay"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inspector / Properties Sidebar -->
+        <div class="cp-inspector-panel card glass-card" id="cp-inspector-panel">
+          <div class="cp-inspector-header">
+            <h3 style="font-size: var(--font-size-sm); font-weight: 700;">📐 Object Inspector</h3>
+            <span class="status-badge" id="cp-obj-status-badge">No selection</span>
+          </div>
+
+          <!-- Empty Inspector State -->
+          <div class="cp-empty-inspector" id="cp-inspector-empty">
+            <div style="font-size: 32px; margin-bottom: 8px;">🖼️</div>
+            <p style="font-size: var(--font-size-xs); color: var(--text-secondary);">
+              Click on an image object on the sheet to adjust exact mm dimensions, crop, position, and rotation.
+            </p>
+          </div>
+
+          <!-- Active Object Form -->
+          <div class="cp-active-inspector hidden" id="cp-inspector-active">
+            
+            <!-- Dimensions (Width & Height mm) -->
+            <div class="cp-prop-section">
+              <div class="cp-prop-row">
+                <div class="cp-prop-input-wrap">
+                  <label for="cp-input-w" class="cp-prop-label">Width (mm)</label>
+                  <input type="number" id="cp-input-w" class="form-input form-input-sm" step="0.5" min="1">
+                </div>
+                <div class="cp-prop-input-wrap">
+                  <label for="cp-input-h" class="cp-prop-label">Height (mm)</label>
+                  <input type="number" id="cp-input-h" class="form-input form-input-sm" step="0.5" min="1">
+                </div>
+              </div>
+
+              <label class="cp-checkbox-label" style="margin-top: 6px;">
+                <input type="checkbox" id="cp-chk-lock-aspect" checked>
+                <span>🔒 Lock Aspect Ratio</span>
+              </label>
+            </div>
+
+            <!-- Position (X & Y mm) -->
+            <div class="cp-prop-section">
+              <div class="cp-prop-row">
+                <div class="cp-prop-input-wrap">
+                  <label for="cp-input-x" class="cp-prop-label">X Position (mm)</label>
+                  <input type="number" id="cp-input-x" class="form-input form-input-sm" step="0.5">
+                </div>
+                <div class="cp-prop-input-wrap">
+                  <label for="cp-input-y" class="cp-prop-label">Y Position (mm)</label>
+                  <input type="number" id="cp-input-y" class="form-input form-input-sm" step="0.5">
+                </div>
+              </div>
+            </div>
+
+            <!-- Rotation -->
+            <div class="cp-prop-section">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label for="cp-slider-rotation" class="cp-prop-label">Rotation</label>
+                <span class="status-badge" id="cp-val-rotation">0°</span>
+              </div>
+              <input type="range" id="cp-slider-rotation" min="-180" max="180" step="1" value="0">
+              <div style="display: flex; gap: 6px; margin-top: 6px;">
+                <button class="btn btn-secondary btn-xs" id="cp-btn-rot-0" style="flex: 1;">0°</button>
+                <button class="btn btn-secondary btn-xs" id="cp-btn-rot-90" style="flex: 1;">90°</button>
+                <button class="btn btn-secondary btn-xs" id="cp-btn-rot-180" style="flex: 1;">180°</button>
+                <button class="btn btn-secondary btn-xs" id="cp-btn-rot-270" style="flex: 1;">270°</button>
+              </div>
+            </div>
+
+            <!-- Custom Crop Action -->
+            <div class="cp-prop-section">
+              <button class="btn btn-secondary btn-sm" id="cp-btn-crop" style="width: 100%;">
+                ✂️ Custom Crop Image
+              </button>
+            </div>
+
+            <!-- Layer & Management Actions -->
+            <div class="cp-prop-section">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px;">
+                <button class="btn btn-secondary btn-xs" id="cp-btn-layer-forward">⬆️ Bring Forward</button>
+                <button class="btn btn-secondary btn-xs" id="cp-btn-layer-backward">⬇️ Send Back</button>
+                <button class="btn btn-secondary btn-xs" id="cp-btn-duplicate">📋 Duplicate</button>
+                <button class="btn btn-outline btn-xs" id="cp-btn-reset-size">🔄 Reset Size</button>
+              </div>
+              <button class="btn btn-danger btn-xs" id="cp-btn-delete-obj" style="width: 100%;">
+                🗑️ Delete Object
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODALS & DIALOGS                           -->
+  <!-- ========================================== -->
+
+  <!-- MODAL: CAMERA CAPTURE -->
+  <div id="modal-camera" class="modal-backdrop hidden">
+    <div class="modal-content glass-modal" style="text-align: center;">
+      <h3 style="font-size: var(--font-size-lg); font-weight: 700; margin-bottom: var(--space-3);">Camera Capture</h3>
+      <div style="position: relative; background: #000; border-radius: var(--radius-md); overflow: hidden; margin-bottom: var(--space-3);">
+        <video id="camera-video" autoplay playsinline style="width: 100%; max-height: 350px; object-fit: cover;"></video>
+      </div>
+      <div style="display: flex; gap: var(--space-2); justify-content: center;">
+        <button class="btn btn-primary" id="btn-camera-snap">📸 Capture</button>
+        <button class="btn btn-secondary" id="btn-camera-close">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PHOTO SIZE SELECTOR & PHASE 4 SAVED CUSTOM SIZES -->
+  <div id="modal-photo-size" class="modal-backdrop hidden">
+    <div class="modal-content glass-modal">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+        <h3 style="font-size: var(--font-size-lg); font-weight: 700;">Select Photo Size</h3>
+        <button class="btn btn-secondary" id="btn-close-photo-modal" style="padding: 2px 8px; min-height: 30px;">✕</button>
+      </div>
+      
+      <input type="text" id="input-search-photo-size" class="form-input" placeholder="🔍 Search photo size (e.g. 35x45, 2x2)..." style="margin-bottom: var(--space-3);">
+
+      <!-- Saved Custom Photo Sizes Section -->
+      <div id="saved-photo-sizes-section" class="saved-sizes-section hidden" style="margin-bottom: var(--space-3);">
+        <h4 style="font-size: var(--font-size-xs); font-weight: 700; color: var(--primary-600); text-transform: uppercase; margin-bottom: 6px;">⭐ My Saved Photo Sizes</h4>
+        <div id="saved-photo-sizes-list" class="saved-presets-list"></div>
+      </div>
+
+      <div id="photo-sizes-list" style="max-height: 230px; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4);">
+        <!-- Options injected dynamically from photoSizes.js and IndexedDB -->
+      </div>
+
+      <!-- PHASE 4: IMPROVED CUSTOM PHOTO SIZE FORM WITH SAVE TO INDEXEDDB -->
+      <div style="border-top: 1px solid var(--border-color); padding-top: var(--space-3);">
+        <h4 style="font-size: var(--font-size-sm); font-weight: 700; margin-bottom: var(--space-2);">Custom Photo Dimensions</h4>
+        
+        <div class="form-group" style="margin-bottom: 8px;">
+          <input type="text" id="custom-photo-name" class="form-input form-input-sm" placeholder="Preset Name (e.g. My Visa Photo)" value="My Custom Photo">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 70px 70px; gap: var(--space-2); margin-bottom: var(--space-2);">
+          <div>
+            <label for="custom-photo-w" class="sr-only">Width</label>
+            <input type="number" id="custom-photo-w" class="form-input form-input-sm" placeholder="Width" step="0.1" value="35">
+          </div>
+          <div>
+            <label for="custom-photo-h" class="sr-only">Height</label>
+            <input type="number" id="custom-photo-h" class="form-input form-input-sm" placeholder="Height" step="0.1" value="45">
+          </div>
+          <div>
+            <select id="custom-photo-unit" class="form-select form-select-sm"><option value="mm">mm</option><option value="in">in</option></select>
+          </div>
+          <div>
+            <input type="number" id="custom-photo-dpi" class="form-input form-input-sm" placeholder="DPI" value="300" title="DPI (Dots Per Inch)">
+          </div>
+        </div>
+
+        <div style="display: flex; gap: var(--space-2);">
+          <button class="btn btn-outline" id="btn-apply-custom-photo" style="flex: 1;">Apply Size</button>
+          <button class="btn btn-primary" id="btn-save-custom-photo" style="flex: 1.2;">💾 Save Preset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PAPER SIZE SELECTOR & PHASE 3 SAVED CUSTOM PAPERS -->
+  <div id="modal-paper-size" class="modal-backdrop hidden">
+    <div class="modal-content glass-modal">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+        <h3 style="font-size: var(--font-size-lg); font-weight: 700;">Select Paper Size</h3>
+        <button class="btn btn-secondary" id="btn-close-paper-modal" style="padding: 2px 8px; min-height: 30px;">✕</button>
+      </div>
+
+      <div class="form-group" style="margin-bottom: var(--space-2);">
+        <select id="select-paper-category" class="form-select">
+          <option value="All">All Categories</option>
+          <option value="Standard Photo Paper">Standard Photo Paper</option>
+          <option value="Standard Paper">Standard Paper</option>
+          <option value="Custom">Custom Saved Papers</option>
+          <option value="Envelope">Envelope</option>
+          <option value="Index Card">Index Card</option>
+        </select>
+      </div>
+
+      <input type="text" id="input-search-paper-size" class="form-input" placeholder="🔍 Search paper size (e.g. A4, 4x6)..." style="margin-bottom: var(--space-3);">
+
+      <!-- Saved Custom Paper Sizes Section -->
+      <div id="saved-paper-sizes-section" class="saved-sizes-section hidden" style="margin-bottom: var(--space-3);">
+        <h4 style="font-size: var(--font-size-xs); font-weight: 700; color: var(--primary-600); text-transform: uppercase; margin-bottom: 6px;">⭐ My Saved Paper Sizes</h4>
+        <div id="saved-paper-sizes-list" class="saved-presets-list"></div>
+      </div>
+
+      <div id="paper-sizes-list" style="max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: var(--space-2); margin-bottom: var(--space-4);">
+        <!-- Options injected dynamically from paperSizes.js and IndexedDB -->
+      </div>
+
+      <!-- PHASE 3: IMPROVED CUSTOM PAPER SIZE FORM WITH SAVE TO INDEXEDDB -->
+      <div style="border-top: 1px solid var(--border-color); padding-top: var(--space-3);">
+        <h4 style="font-size: var(--font-size-sm); font-weight: 700; margin-bottom: var(--space-2);">Custom Paper Size</h4>
+
+        <div class="form-group" style="margin-bottom: 8px;">
+          <input type="text" id="custom-paper-name" class="form-input form-input-sm" placeholder="Preset Name (e.g. My Photo Paper)" value="My Photo Paper">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); margin-bottom: var(--space-2);">
+          <div>
+            <label for="custom-paper-w" class="form-label-xs">Width (mm)</label>
+            <input type="number" id="custom-paper-w" class="form-input form-input-sm" placeholder="Width" step="0.5" value="210">
+          </div>
+          <div>
+            <label for="custom-paper-h" class="form-label-xs">Height (mm)</label>
+            <input type="number" id="custom-paper-h" class="form-input form-input-sm" placeholder="Height" step="0.5" value="297">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: var(--space-3);">
+          <label class="form-label-xs">Orientation</label>
+          <div style="display: flex; gap: var(--space-4);">
+            <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+              <input type="radio" name="custom-paper-orient" id="custom-paper-orient-portrait" value="portrait" checked>
+              <span>Portrait</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+              <input type="radio" name="custom-paper-orient" id="custom-paper-orient-landscape" value="landscape">
+              <span>Landscape</span>
+            </label>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: var(--space-2);">
+          <button class="btn btn-outline" id="btn-apply-custom-paper" style="flex: 1;">Apply Size</button>
+          <button class="btn btn-primary" id="btn-save-custom-paper" style="flex: 1.2;">💾 Save Paper</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CUSTOM PRINT MARGINS -->
+  <div id="modal-cp-margins" class="modal-backdrop hidden">
+    <div class="modal-content glass-modal" style="max-width: 420px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+        <h3 style="font-size: var(--font-size-md); font-weight: 700;">📐 Page Margins</h3>
+        <button class="btn btn-secondary btn-xs" id="btn-close-cp-margins">✕</button>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+        <button class="btn btn-xs btn-outline" id="cp-btn-link-margins">
+          <span id="cp-icon-link">🔗</span> <span id="cp-text-link">Link Margins</span>
+        </button>
+        <label style="font-size: 12px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+          <input type="checkbox" id="cp-chk-ignore-margins">
+          <span>Remove / Ignore Margins</span>
+        </label>
+      </div>
+
+      <div class="margin-quad-grid" style="margin-bottom: var(--space-4);">
+        <div class="margin-input-unit">
+          <span class="margin-input-tag">Top (mm)</span>
+          <input type="number" id="cp-margin-top" class="form-input form-input-sm" value="10" min="0" max="60" step="0.5">
+        </div>
+        <div class="margin-input-unit">
+          <span class="margin-input-tag">Bottom (mm)</span>
+          <input type="number" id="cp-margin-bottom" class="form-input form-input-sm" value="10" min="0" max="60" step="0.5">
+        </div>
+        <div class="margin-input-unit">
+          <span class="margin-input-tag">Left (mm)</span>
+          <input type="number" id="cp-margin-left" class="form-input form-input-sm" value="10" min="0" max="60" step="0.5">
+        </div>
+        <div class="margin-input-unit">
+          <span class="margin-input-tag">Right (mm)</span>
+          <input type="number" id="cp-margin-right" class="form-input form-input-sm" value="10" min="0" max="60" step="0.5">
+        </div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-apply-cp-margins" style="width: 100%;">Done</button>
+    </div>
+  </div>
+
+  <!-- MODAL: HEADER & FOOTER CONFIGURATION -->
+  <div id="modal-cp-header-footer" class="modal-backdrop hidden">
+    <div class="modal-content glass-modal" style="max-width: 500px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+        <h3 style="font-size: var(--font-size-md); font-weight: 700;">📝 Header &amp; Footer</h3>
+        <button class="btn btn-secondary btn-xs" id="btn-close-cp-hf">✕</button>
+      </div>
+
+      <!-- Header Section -->
+      <div style="border-bottom: 1px solid var(--border-color); padding-bottom: var(--space-3); margin-bottom: var(--space-3);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="cp-enable-header">
+            <span>Enable Header</span>
+          </label>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 11px; color: var(--text-secondary);">Height:</span>
+            <input type="number" id="cp-header-height" class="form-input form-input-xs" value="15" min="5" max="50" style="width: 60px;">
+            <span style="font-size: 11px;">mm</span>
+          </div>
+        </div>
+
+        <div id="cp-header-inputs-wrap" class="form-group-stack">
+          <input type="text" id="cp-header-left" class="form-input form-input-sm" placeholder="Left text (e.g. Company Name)">
+          <input type="text" id="cp-header-center" class="form-input form-input-sm" placeholder="Center text (e.g. Document Title)">
+          <input type="text" id="cp-header-right" class="form-input form-input-sm" placeholder="Right text (e.g. Date / Confidential)">
+        </div>
+      </div>
+
+      <!-- Footer Section -->
+      <div style="margin-bottom: var(--space-4);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="cp-enable-footer">
+            <span>Enable Footer</span>
+          </label>
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 11px; color: var(--text-secondary);">Height:</span>
+            <input type="number" id="cp-footer-height" class="form-input form-input-xs" value="15" min="5" max="50" style="width: 60px;">
+            <span style="font-size: 11px;">mm</span>
+          </div>
+        </div>
+
+        <div id="cp-footer-inputs-wrap" class="form-group-stack">
+          <input type="text" id="cp-footer-left" class="form-input form-input-sm" placeholder="Left text">
+          <input type="text" id="cp-footer-center" class="form-input form-input-sm" placeholder="Center text">
+          <input type="text" id="cp-footer-right" class="form-input form-input-sm" placeholder="Right text (e.g. Page 1 of 1)" value="Page 1 of 1">
+        </div>
+        <span style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">
+          Tip: You can use dynamic page tags like "Page 1 of 1" or document dates.
+        </span>
+      </div>
+
+      <button class="btn btn-primary" id="btn-apply-cp-hf" style="width: 100%;">Done</button>
+    </div>
+  </div>
+
+  <!-- MODAL: CUSTOM CROP TOOL -->
+  <div id="modal-cp-crop" class="modal-backdrop hidden">
+    <div class="modal-content glass-modal" style="max-width: 640px; text-align: center;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+        <h3 style="font-size: var(--font-size-md); font-weight: 700;">✂️ Custom Image Crop</h3>
+        <button class="btn btn-secondary btn-xs" id="btn-close-crop-modal">✕</button>
+      </div>
+
+      <!-- Aspect Ratio Presets -->
+      <div class="chip-grid" id="crop-aspect-chips" style="margin-bottom: var(--space-3);">
+        <button class="chip selected" data-aspect="free">Free</button>
+        <button class="chip" data-aspect="1:1">1:1</button>
+        <button class="chip" data-aspect="4:3">4:3</button>
+        <button class="chip" data-aspect="3:4">3:4</button>
+        <button class="chip" data-aspect="16:9">16:9</button>
+        <button class="chip" data-aspect="custom">Custom</button>
+      </div>
+
+      <!-- Crop Canvas Workspace -->
+      <div class="crop-viewport-container" style="position: relative; background: #0b0f19; border-radius: var(--radius-md); overflow: hidden; max-height: 48vh; margin-bottom: var(--space-3);">
+        <canvas id="custom-crop-canvas" style="display: block; margin: 0 auto; cursor: crosshair;"></canvas>
+      </div>
+
+      <!-- Crop Adjustments -->
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: var(--space-3); flex-wrap: wrap;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 12px; color: var(--text-secondary);">Zoom:</span>
+          <input type="range" id="crop-slider-zoom" min="0.5" max="3" step="0.05" value="1" style="width: 120px;">
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button class="btn btn-secondary btn-xs" id="crop-btn-rot-90">🔄 90°</button>
+          <button class="btn btn-secondary btn-xs" id="crop-btn-reset">Reset</button>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: var(--space-2);">
+        <button class="btn btn-secondary" id="btn-cancel-crop" style="flex: 1;">Cancel</button>
+        <button class="btn btn-primary" id="btn-apply-crop" style="flex: 1;">✓ Apply Crop</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SHEET FULL PREVIEW -->
+  <div id="modal-cp-preview" class="modal-backdrop hidden">
+    <div class="modal-content glass-modal" style="max-width: 720px; text-align: center;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3);">
+        <h3 style="font-size: var(--font-size-md); font-weight: 700;">👁️ Document Print Preview</h3>
+        <button class="btn btn-secondary btn-xs" id="btn-close-cp-preview">✕</button>
+      </div>
+
+      <div class="preview-scroll-viewport" style="max-height: 65vh; overflow: auto; background: var(--bg-subtle); padding: var(--space-4); border-radius: var(--radius-md); margin-bottom: var(--space-4); display: flex; justify-content: center;">
+        <canvas id="cp-full-preview-canvas" style="box-shadow: var(--shadow-lg); background: #fff;"></canvas>
+      </div>
+
+      <div style="display: flex; gap: var(--space-2); justify-content: flex-end;">
+        <button class="btn btn-secondary" id="btn-close-cp-preview-footer">Close</button>
+        <button class="btn btn-primary" id="btn-print-from-preview">🖨️ Print Document</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Central App Logic -->
+  <script src="./script.js"></script>
+</body>
+</html>
